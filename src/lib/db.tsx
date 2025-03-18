@@ -3,8 +3,8 @@ import { openDB } from 'idb';
 const DB_NAME = 'ice_cream_store';
 const STORE_NAME = 'ice_creams';
 
-interface IceCream {
-    id?: number;
+export interface IceCream {
+    id: number;
     name: string;
     quantity: number;
 }
