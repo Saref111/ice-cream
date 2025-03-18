@@ -1,12 +1,14 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { getIceCreams, addIceCream, updateQuantity, deleteIceCream, type IceCream } from '../lib/db';
+import { getIceCreams, addIceCream, updateQuantity, deleteIceCream, type IceCream } from '../../lib/db';
 import { Button, TextField, List, ListItem, ListItemText, Container, Typography } from '@mui/material';
 import { ChangeEvent } from 'react';
 
-export default function Home() {
+export default function IceCreamStore() {
   const [iceCreams, setIceCreams] = useState<IceCream[]>([]);
   const [newIceCream, setNewIceCream] = useState('');
-  const [newQuantity, setNewQuantity] = useState(1);
+  const [newQuantity, setNewQuantity] = useState(0);
 
   useEffect(() => {
     loadIceCreams();
@@ -57,10 +59,17 @@ export default function Home() {
         {iceCreams.map(({ id, name, quantity }) => (
           <ListItem key={id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <ListItemText primary={`${name} - ${quantity} шт.`} />
-            <Button variant="contained" color="secondary" onClick={() => handleSell(id, quantity)}>-</Button>
+            <Button 
+                variant="contained" 
+                color="secondary" 
+                onClick={() => handleSell(id, quantity)}
+                sx={{minHeight: '100%'}}
+            >
+                -
+            </Button>
           </ListItem>
         ))}
       </List>
     </Container>
   );
-}
+} 
