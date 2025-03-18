@@ -6,7 +6,7 @@ import {
   deleteIceCream, deleteGood, recordSale, recordGoodSale,
   type IceCream, type Item 
 } from '../../lib/db';
-import { Container, Typography, Fab } from '@mui/material';
+import { Container, Typography, Fab, Divider, Paper } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
 import CandyIcon from '@mui/icons-material/Cake';
@@ -58,23 +58,27 @@ export default function IceCreamStore() {
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: 4, pb: 8 }}>
       <Typography variant="h4" gutterBottom>Кіоск морозива</Typography>
 
-      <ItemList
-        title="Морозиво"
-        items={iceCreams}
-        onDecrease={handleIceCreamDecrease}
-        onRemoveAll={(id, name, quantity) => handleIceCreamDecrease(id, name, quantity, quantity)}
-        onAdd={() => setIsIceCreamDialogOpen(true)}
-        emptyIcon={<IceCreamIcon sx={{ fontSize: 60 }} />}
-      />
+      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <ItemList
+          title="Морозиво"
+          items={iceCreams}
+          onDecrease={handleIceCreamDecrease}
+          onRemoveAll={(id, name, quantity) => handleIceCreamDecrease(id, name, quantity, quantity)}
+          onAdd={() => setIsIceCreamDialogOpen(true)}
+          emptyIcon={<IceCreamIcon sx={{ fontSize: 60 }} />}
+        />
+      </Paper>
 
-      <ItemList
-        title="Додатково"
-        items={goods}
-        onDecrease={handleGoodDecrease}
-        onRemoveAll={(id, name, quantity) => handleGoodDecrease(id, name, quantity, quantity)}
-        onAdd={() => setIsGoodsDialogOpen(true)}
-        emptyIcon={<CandyIcon sx={{ fontSize: 60 }} />}
-      />
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <ItemList
+          title="Додатково"
+          items={goods}
+          onDecrease={handleGoodDecrease}
+          onRemoveAll={(id, name, quantity) => handleGoodDecrease(id, name, quantity, quantity)}
+          onAdd={() => setIsGoodsDialogOpen(true)}
+          emptyIcon={<CandyIcon sx={{ fontSize: 60 }} />}
+        />
+      </Paper>
 
       <Fab 
         color="primary" 
