@@ -12,6 +12,7 @@ import IceCreamIcon from '@mui/icons-material/Icecream';
 import CandyIcon from '@mui/icons-material/Cake';
 import ItemList from './ItemList';
 import AddIceCreamDialog from './AddIceCreamDialog';
+import AddGoodDialog from './AddGoodDialog';
 
 export default function IceCreamStore() {
   const [iceCreams, setIceCreams] = useState<IceCream[]>([]);
@@ -104,7 +105,7 @@ export default function IceCreamStore() {
         onAdd={loadAll}
       />
 
-      <AddIceCreamDialog
+      <AddGoodDialog
         open={isGoodsDialogOpen}
         onClose={() => setIsGoodsDialogOpen(false)}
         onAdd={loadAll}
