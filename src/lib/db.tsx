@@ -4,6 +4,7 @@ const DB_NAME = 'ice_cream_store';
 const STORE_NAME = 'ice_creams';
 const SALES_STORE = 'sales';
 const GOODS_STORE = 'additional_goods';
+const INCOME_STORE = 'income';
 
 export interface IceCream {
     id: number;
@@ -25,8 +26,18 @@ export interface Item {
     quantity: number;
 }
 
+export interface Income {
+    id?: number;
+    itemId: number;
+    itemName: string;
+    amount: number;
+    quantity: number;
+    timestamp: Date;
+    type: 'icecream' | 'good';
+}
+
 async function initDB() {
-    return openDB(DB_NAME, 3, {
+    return openDB(DB_NAME, 4, {
         upgrade(db, oldVersion, newVersion) {
             if (oldVersion < 1) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
@@ -36,6 +47,9 @@ async function initDB() {
             }
             if (oldVersion < 3) {
                 db.createObjectStore(GOODS_STORE, { keyPath: 'id', autoIncrement: true });
+            }
+            if (oldVersion < 4) {
+                db.createObjectStore(INCOME_STORE, { keyPath: 'id', autoIncrement: true });
             }
         },
     });
@@ -48,10 +62,12 @@ export async function getIceCreams(): Promise<IceCream[]> {
 
 export async function addIceCream(name: string, quantity: number): Promise<IDBValidKey> {
     const db = await initDB();
-    return db.add(STORE_NAME, { name, quantity });
+    const id = await db.add(STORE_NAME, { name, quantity });
+    await recordIncome(Number(id), name, quantity, 'icecream');
+    return id;
 }
 
-export async function updateQuantity(id: number, newQuantity: number): Promise<void> {
+export async function updateQuantity(id: number, newQuantity: number, currentQuantity: number): Promise<void> {
     const db = await initDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
@@ -59,6 +75,9 @@ export async function updateQuantity(id: number, newQuantity: number): Promise<v
     if (item) {
         item.quantity = newQuantity;
         await store.put(item);
+        if (newQuantity > currentQuantity) {
+            await recordIncome(id, item.name, newQuantity - currentQuantity, 'icecream');
+        }
     }
 }
 
@@ -90,10 +109,12 @@ export async function getGoods(): Promise<Item[]> {
 
 export async function addGood(name: string, quantity: number): Promise<IDBValidKey> {
     const db = await initDB();
-    return db.add(GOODS_STORE, { name, quantity });
+    const id = await db.add(GOODS_STORE, { name, quantity });
+    await recordIncome(Number(id), name, quantity, 'good');
+    return id;
 }
 
-export async function updateGoodQuantity(id: number, newQuantity: number): Promise<void> {
+export async function updateGoodQuantity(id: number, newQuantity: number, currentQuantity: number): Promise<void> {
     const db = await initDB();
     const tx = db.transaction(GOODS_STORE, 'readwrite');
     const store = tx.objectStore(GOODS_STORE);
@@ -101,6 +122,9 @@ export async function updateGoodQuantity(id: number, newQuantity: number): Promi
     if (item) {
         item.quantity = newQuantity;
         await store.put(item);
+        if (newQuantity > currentQuantity) {
+            await recordIncome(id, item.name, newQuantity - currentQuantity, 'good');
+        }
     }
 }
 
@@ -118,4 +142,22 @@ export async function recordGoodSale(goodId: number, goodName: string, amount: n
         timestamp: new Date()
     };
     return db.add(SALES_STORE, sale);
+}
+
+export async function recordIncome(itemId: number, itemName: string, quantity: number, type: 'icecream' | 'good'): Promise<IDBValidKey> {
+    const db = await initDB();
+    const income: Income = {
+        itemId,
+        itemName,
+        quantity,
+        amount: 0, // You can add price logic later if needed
+        timestamp: new Date(),
+        type
+    };
+    return db.add(INCOME_STORE, income);
+}
+
+export async function getIncomes(): Promise<Income[]> {
+    const db = await initDB();
+    return db.getAll(INCOME_STORE);
 }

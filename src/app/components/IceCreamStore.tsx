@@ -38,7 +38,7 @@ export default function IceCreamStore() {
       await deleteIceCream(id);
       await recordSale(id, name, quantity);
     } else {
-      await updateQuantity(id, quantity - amount);
+      await updateQuantity(id, quantity - amount, quantity);
       await recordSale(id, name, amount);
     }
     loadAll();
@@ -49,19 +49,19 @@ export default function IceCreamStore() {
       await deleteGood(id);
       await recordGoodSale(id, name, quantity);
     } else {
-      await updateGoodQuantity(id, quantity - amount);
+      await updateGoodQuantity(id, quantity - amount, quantity);
       await recordGoodSale(id, name, amount);
     }
     loadAll();
   }
 
   async function handleIceCreamAddQuantity(id: number, name: string, currentQuantity: number, additionalQuantity: number) {
-    await updateQuantity(id, currentQuantity + additionalQuantity);
+    await updateQuantity(id, currentQuantity + additionalQuantity, currentQuantity);
     loadAll();
   }
 
   async function handleGoodAddQuantity(id: number, name: string, currentQuantity: number, additionalQuantity: number) {
-    await updateGoodQuantity(id, currentQuantity + additionalQuantity);
+    await updateGoodQuantity(id, currentQuantity + additionalQuantity, currentQuantity);
     loadAll();
   }
 
