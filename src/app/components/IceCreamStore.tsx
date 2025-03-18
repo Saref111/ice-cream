@@ -6,7 +6,7 @@ import {
   deleteIceCream, deleteGood, recordSale, recordGoodSale,
   type IceCream, type Item 
 } from '../../lib/db';
-import { Container, Typography, Fab, Divider } from '@mui/material';
+import { Container, Typography, Divider, SpeedDial, SpeedDialAction } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
 import CandyIcon from '@mui/icons-material/Cake';
@@ -65,6 +65,19 @@ export default function IceCreamStore() {
     loadAll();
   }
 
+  const actions = [
+    { 
+      icon: <IceCreamIcon />, 
+      name: 'Додати морозиво',
+      onClick: () => setIsIceCreamDialogOpen(true)
+    },
+    { 
+      icon: <CandyIcon />, 
+      name: 'Додати товар',
+      onClick: () => setIsGoodsDialogOpen(true)
+    }
+  ];
+
   return (
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: 4, pb: 8 }}>
       <Typography variant="h4" gutterBottom>Кіоск морозива</Typography>
@@ -91,13 +104,20 @@ export default function IceCreamStore() {
         emptyIcon={<CandyIcon sx={{ fontSize: 60 }} />}
       />
 
-      <Fab 
-        color="primary" 
+      <SpeedDial
+        ariaLabel="Додати"
         sx={{ position: 'fixed', bottom: 16, right: 16 }}
-        onClick={() => setIsIceCreamDialogOpen(true)}
+        icon={<AddIcon />}
       >
-        <AddIcon />
-      </Fab>
+        {actions.map((action) => (
+          <SpeedDialAction
+            key={action.name}
+            icon={action.icon}
+            tooltipTitle={action.name}
+            onClick={action.onClick}
+          />
+        ))}
+      </SpeedDial>
 
       <AddIceCreamDialog
         open={isIceCreamDialogOpen}
