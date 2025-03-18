@@ -54,6 +54,16 @@ export default function IceCreamStore() {
     loadAll();
   }
 
+  async function handleIceCreamAddQuantity(id: number, name: string, currentQuantity: number, additionalQuantity: number) {
+    await updateQuantity(id, currentQuantity + additionalQuantity);
+    loadAll();
+  }
+
+  async function handleGoodAddQuantity(id: number, name: string, currentQuantity: number, additionalQuantity: number) {
+    await updateGoodQuantity(id, currentQuantity + additionalQuantity);
+    loadAll();
+  }
+
   return (
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: 4, pb: 8 }}>
       <Typography variant="h4" gutterBottom>Кіоск морозива</Typography>
@@ -64,6 +74,7 @@ export default function IceCreamStore() {
         onDecrease={handleIceCreamDecrease}
         onRemoveAll={(id, name, quantity) => handleIceCreamDecrease(id, name, quantity, quantity)}
         onAdd={() => setIsIceCreamDialogOpen(true)}
+        onAddQuantity={handleIceCreamAddQuantity}
         emptyIcon={<IceCreamIcon sx={{ fontSize: 60 }} />}
       />
 
@@ -75,6 +86,7 @@ export default function IceCreamStore() {
         onDecrease={handleGoodDecrease}
         onRemoveAll={(id, name, quantity) => handleGoodDecrease(id, name, quantity, quantity)}
         onAdd={() => setIsGoodsDialogOpen(true)}
+        onAddQuantity={handleGoodAddQuantity}
         emptyIcon={<CandyIcon sx={{ fontSize: 60 }} />}
       />
 

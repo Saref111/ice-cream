@@ -4,6 +4,8 @@ import { Box, Button, ButtonGroup, List, ListItem, Typography } from '@mui/mater
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
+import { useState } from 'react';
+import AddQuantityDialog from './AddQuantityDialog';
 
 interface Item {
   id: number;
@@ -17,6 +19,7 @@ interface ItemListProps {
   onDecrease: (id: number, name: string, quantity: number, amount: number) => Promise<void>;
   onRemoveAll: (id: number, name: string, quantity: number) => Promise<void>;
   onAdd: () => void;
+  onAddQuantity: (id: number, name: string, currentQuantity: number, additionalQuantity: number) => Promise<void>;
   emptyIcon?: React.ReactNode;
 }
 
@@ -26,8 +29,11 @@ export default function ItemList({
   onDecrease, 
   onRemoveAll, 
   onAdd,
+  onAddQuantity,
   emptyIcon = <IceCreamIcon sx={{ fontSize: 60 }} />
 }: ItemListProps) {
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>{title}</Typography>
@@ -93,35 +99,58 @@ export default function ItemList({
                   {quantity} шт.
                 </Typography>
               </Box>
-              <ButtonGroup 
-                variant="contained" 
-                size="small"
-                sx={{ boxShadow: 2 }}
-              >
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
-                  onClick={() => onDecrease(id, name, quantity, 1)}
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  onClick={() => setSelectedItem({ id, name, quantity })}
                   sx={{ minWidth: '40px' }}
                 >
-                  -1
+                  <AddIcon fontSize="small" />
                 </Button>
-                <Button
-                  onClick={() => onDecrease(id, name, quantity, 2)}
-                  sx={{ minWidth: '40px' }}
+                <ButtonGroup 
+                  variant="contained" 
+                  size="small"
+                  sx={{ boxShadow: 2 }}
                 >
-                  -2
-                </Button>
-                <Button
-                  color="error"
-                  onClick={() => onRemoveAll(id, name, quantity)}
-                  sx={{ minWidth: '40px' }}
-                >
-                  <DeleteIcon fontSize="small" />
-                </Button>
-              </ButtonGroup>
+                  <Button
+                    onClick={() => onDecrease(id, name, quantity, 1)}
+                    sx={{ minWidth: '40px' }}
+                  >
+                    -1
+                  </Button>
+                  <Button
+                    onClick={() => onDecrease(id, name, quantity, 2)}
+                    sx={{ minWidth: '40px' }}
+                  >
+                    -2
+                  </Button>
+                  <Button
+                    color="error"
+                    onClick={() => onRemoveAll(id, name, quantity)}
+                    sx={{ minWidth: '40px' }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </Button>
+                </ButtonGroup>
+              </Box>
             </ListItem>
           ))}
         </List>
       )}
+
+      <AddQuantityDialog
+        open={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        onAdd={async (quantity) => {
+          if (selectedItem) {
+            await onAddQuantity(selectedItem.id, selectedItem.name, selectedItem.quantity, quantity);
+          }
+        }}
+        itemName={selectedItem?.name || ''}
+        currentQuantity={selectedItem?.quantity || 0}
+      />
     </Box>
   );
 } 
