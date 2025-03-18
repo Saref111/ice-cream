@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getIceCreams, addIceCream, updateQuantity, deleteIceCream, type IceCream } from '../../lib/db';
-import { Button, TextField, List, ListItem, ListItemText, Container, Typography } from '@mui/material';
-import { ChangeEvent } from 'react';
+import { getIceCreams, updateQuantity, deleteIceCream, type IceCream } from '../../lib/db';
+import { Button, List, ListItem, ListItemText, Container, Typography, Fab } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import AddIceCreamDialog from './AddIceCreamDialog';
 
 export default function IceCreamStore() {
   const [iceCreams, setIceCreams] = useState<IceCream[]>([]);
-  const [newIceCream, setNewIceCream] = useState('');
-  const [newQuantity, setNewQuantity] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     loadIceCreams();
@@ -17,14 +17,6 @@ export default function IceCreamStore() {
   async function loadIceCreams(): Promise<void> {
     const data = await getIceCreams();
     setIceCreams(data);
-  }
-
-  async function handleAdd(): Promise<void> {
-    if (newIceCream.trim() === '' || newQuantity < 1) return;
-    await addIceCream(newIceCream, newQuantity);
-    setNewIceCream('');
-    setNewQuantity(1);
-    loadIceCreams();
   }
 
   async function handleSell(id: number, quantity: number): Promise<void> {
@@ -40,36 +32,35 @@ export default function IceCreamStore() {
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: 4 }}>
       <Typography variant="h4" gutterBottom>Кіоск морозива</Typography>
 
-      <TextField
-        label="Назва морозива"
-        value={newIceCream}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => setNewIceCream(e.target.value)}
-        sx={{ mr: 1 }}
-      />
-      <TextField
-        type="number"
-        label="Кількість"
-        value={newQuantity}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => setNewQuantity(Number(e.target.value))}
-        sx={{ width: 80, mr: 1 }}
-      />
-      <Button variant="contained" color="primary" onClick={handleAdd}>Додати</Button>
-
       <List sx={{ mt: 3 }}>
         {iceCreams.map(({ id, name, quantity }) => (
           <ListItem key={id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <ListItemText primary={`${name} - ${quantity} шт.`} />
             <Button 
-                variant="contained" 
-                color="secondary" 
-                onClick={() => handleSell(id, quantity)}
-                sx={{minHeight: '100%'}}
+              variant="contained" 
+              color="secondary" 
+              onClick={() => handleSell(id, quantity)}
+              sx={{minHeight: '100%'}}
             >
-                -
+              -
             </Button>
           </ListItem>
         ))}
       </List>
+
+      <Fab 
+        color="primary" 
+        sx={{ position: 'fixed', bottom: 16, right: 16 }}
+        onClick={() => setIsDialogOpen(true)}
+      >
+        <AddIcon />
+      </Fab>
+
+      <AddIceCreamDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onAdd={loadIceCreams}
+      />
     </Container>
   );
 } 
