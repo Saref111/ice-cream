@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getIceCreams, updateQuantity, deleteIceCream, type IceCream } from '../../lib/db';
+import { getIceCreams, updateQuantity, deleteIceCream, recordSale, type IceCream } from '../../lib/db';
 import { Button, List, ListItem, ListItemText, Container, Typography, Fab, ButtonGroup } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,17 +20,20 @@ export default function IceCreamStore() {
     setIceCreams(data);
   }
 
-  async function handleDecrease(id: number, quantity: number, amount: number): Promise<void> {
+  async function handleDecrease(id: number, name: string, quantity: number, amount: number): Promise<void> {
     if (quantity <= amount) {
       await deleteIceCream(id);
+      await recordSale(id, name, quantity);
     } else {
       await updateQuantity(id, quantity - amount);
+      await recordSale(id, name, amount);
     }
     loadIceCreams();
   }
 
-  async function handleRemoveAll(id: number): Promise<void> {
+  async function handleRemoveAll(id: number, name: string, quantity: number): Promise<void> {
     await deleteIceCream(id);
+    await recordSale(id, name, quantity);
     loadIceCreams();
   }
 
@@ -52,20 +55,20 @@ export default function IceCreamStore() {
             <ListItemText primary={`${name} - ${quantity} шт.`} />
             <ButtonGroup variant="contained" size="small">
               <Button
-                onClick={() => handleDecrease(id, quantity, 1)}
+                onClick={() => handleDecrease(id, name, quantity, 1)}
                 sx={{ minWidth: '40px' }}
               >
                 -1
               </Button>
               <Button
-                onClick={() => handleDecrease(id, quantity, 2)}
+                onClick={() => handleDecrease(id, name, quantity, 2)}
                 sx={{ minWidth: '40px' }}
               >
                 -2
               </Button>
               <Button
                 color="error"
-                onClick={() => handleRemoveAll(id)}
+                onClick={() => handleRemoveAll(id, name, quantity)}
                 sx={{ minWidth: '40px' }}
               >
                 <DeleteIcon fontSize="small" />
