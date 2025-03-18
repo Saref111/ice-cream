@@ -74,11 +74,39 @@ export default function IceCreamStore() {
                 display: 'flex', 
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                py: 1
+                py: 2,
+                px: 3,
+                mb: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                bgcolor: 'background.paper',
+                boxShadow: 1
               }}
             >
-              <ListItemText primary={`${name} - ${quantity} шт.`} />
-              <ButtonGroup variant="contained" size="small">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {name}
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    fontWeight: 'medium'
+                  }}
+                >
+                  {quantity} шт.
+                </Typography>
+              </Box>
+              <ButtonGroup 
+                variant="contained" 
+                size="small"
+                sx={{ boxShadow: 2 }}
+              >
                 <Button
                   onClick={() => handleDecrease(id, name, quantity, 1)}
                   sx={{ minWidth: '40px' }}
