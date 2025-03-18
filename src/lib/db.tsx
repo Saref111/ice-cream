@@ -26,7 +26,7 @@ export interface Item {
 }
 
 async function initDB() {
-    return openDB(DB_NAME, 2, {
+    return openDB(DB_NAME, 3, {
         upgrade(db, oldVersion, newVersion) {
             if (oldVersion < 1) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
