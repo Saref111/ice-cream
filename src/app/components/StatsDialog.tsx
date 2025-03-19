@@ -20,6 +20,10 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { getIceCreams, getGoods, getDrones } from '../../lib/db';
 
+const BK_POSITION_TEXT = String.fromCharCode(
+  66, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
+);
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -75,7 +79,7 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
       const iceCreamReport = iceCreams.map(ice => 
         `- ${ice.name}: ${ice.quantity} шт.`
       ).join('\n');
-      sections.push(`БК на позиції:\n${iceCreamReport}`);
+      sections.push(`${BK_POSITION_TEXT}:\n${iceCreamReport}`);
     }
 
     if (goods.length > 0) {
