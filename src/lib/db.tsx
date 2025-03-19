@@ -43,6 +43,15 @@ export interface Drone {
     amount: number;
 }
 
+export interface DatabaseExport {
+    timestamp: string;
+    iceCreams: IceCream[];
+    goods: Item[];
+    drones: Drone[];
+    sales: Sale[];
+    incomes: Income[];
+}
+
 async function initDB() {
     return openDB(DB_NAME, 5, {
         upgrade(db, oldVersion, newVersion) {
@@ -192,4 +201,35 @@ export async function updateDrone(id: number, name: string, amount: number): Pro
     const tx = db.transaction(DRONES_STORE, 'readwrite');
     const store = tx.objectStore(DRONES_STORE);
     await store.put({ id, name, amount });
+}
+
+export async function clearDatabase(): Promise<void> {
+    const db = await initDB();
+    await Promise.all([
+        db.clear(STORE_NAME),
+        db.clear(SALES_STORE),
+        db.clear(GOODS_STORE),
+        db.clear(INCOME_STORE),
+        db.clear(DRONES_STORE)
+    ]);
+}
+
+export async function importDatabase(data: DatabaseExport): Promise<void> {
+    const db = await initDB();
+    await clearDatabase();
+
+    const tx = db.transaction(
+        [STORE_NAME, SALES_STORE, GOODS_STORE, INCOME_STORE, DRONES_STORE], 
+        'readwrite'
+    );
+
+    await Promise.all([
+        ...data.iceCreams.map((item: IceCream) => tx.objectStore(STORE_NAME).add(item)),
+        ...data.sales.map((item: Sale) => tx.objectStore(SALES_STORE).add(item)),
+        ...data.goods.map((item: Item) => tx.objectStore(GOODS_STORE).add(item)),
+        ...data.incomes.map((item: Income) => tx.objectStore(INCOME_STORE).add(item)),
+        ...data.drones.map((item: Drone) => tx.objectStore(DRONES_STORE).add(item))
+    ]);
+
+    await tx.done;
 }

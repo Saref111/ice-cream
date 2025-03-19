@@ -152,6 +152,7 @@ export default function IceCreamStore() {
       <StatsDialog
         open={isStatsOpen}
         onClose={() => setIsStatsOpen(false)}
+        onUpdate={loadAll}
       />
     </Container>
   );

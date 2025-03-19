@@ -21,7 +21,8 @@
     "idb": "^8.0.2",
     "next": "15.2.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

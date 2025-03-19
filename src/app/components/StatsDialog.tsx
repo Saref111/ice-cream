@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { 
   Dialog, 
   DialogTitle, 
@@ -22,9 +22,10 @@ import {
 import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { 
   getIceCreams, getGoods, getDrones, getSales, getIncomes,
-  type IceCream, type Item, type Drone, type Sale, type Income 
+  type IceCream, type Item, type Drone, type Sale, type Income, importDatabase
 } from '../../lib/db';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -32,6 +33,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import 'dayjs/locale/uk';
 import { saveAs } from 'file-saver';
+import { useDropzone } from 'react-dropzone';
 
 const ICECREAM_TEXT = String.fromCharCode(
   66, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
@@ -60,6 +62,7 @@ function TabPanel(props: TabPanelProps) {
 interface StatsDialogProps {
   open: boolean;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
 interface DatabaseExport {
@@ -71,7 +74,7 @@ interface DatabaseExport {
   incomes: Income[];
 }
 
-export default function StatsDialog({ open, onClose }: StatsDialogProps) {
+export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProps) {
   const [tabValue, setTabValue] = useState(0);
   const [reportType, setReportType] = useState('amount');
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(
@@ -81,6 +84,7 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
     dayjs().hour(16).minute(0).second(0)
   );
   const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -192,6 +196,32 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
     }
   };
 
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    try {
+      const file = acceptedFiles[0];
+      if (!file) return;
+
+      const text = await file.text();
+      const data: DatabaseExport = JSON.parse(text);
+      
+      await importDatabase(data);
+      setShowCopySuccess(true);
+      setImportError(null);
+      onUpdate();
+      onClose();
+    } catch (error) {
+      setImportError('Помилка імпорту. Перевірте формат файлу.');
+    }
+  }, [onClose, onUpdate]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop,
+    accept: {
+      'application/json': ['.json']
+    },
+    maxFiles: 1
+  });
+
   return (
     <Dialog 
       open={open} 
@@ -262,7 +292,38 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
           </Box>
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
-          Імпорт даних
+          <Box
+            {...getRootProps()}
+            sx={{
+              border: '2px dashed',
+              borderColor: isDragActive ? 'primary.main' : 'grey.300',
+              borderRadius: 1,
+              p: 3,
+              textAlign: 'center',
+              cursor: 'pointer',
+              bgcolor: isDragActive ? 'action.hover' : 'background.paper',
+              '&:hover': {
+                bgcolor: 'action.hover'
+              }
+            }}
+          >
+            <input {...getInputProps()} />
+            <UploadFileIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+            <Typography>
+              {isDragActive
+                ? 'Відпустіть файл тут'
+                : 'Перетягніть JSON файл сюди або клікніть для вибору'
+              }
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Підтримуються файли .json
+            </Typography>
+          </Box>
+          {importError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {importError}
+            </Alert>
+          )}
         </TabPanel>
       </DialogContent>
       <Snackbar
