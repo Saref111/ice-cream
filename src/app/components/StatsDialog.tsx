@@ -17,11 +17,17 @@ import {
   Radio,
   RadioGroup,
   FormControl,
+  TextField,
 } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { getIceCreams, getGoods, getDrones } from '../../lib/db';
+import { getIceCreams, getGoods, getDrones, getSales } from '../../lib/db';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import 'dayjs/locale/uk';
 
 const ICECREAM_TEXT = String.fromCharCode(
   66, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
@@ -55,6 +61,12 @@ interface StatsDialogProps {
 export default function StatsDialog({ open, onClose }: StatsDialogProps) {
   const [tabValue, setTabValue] = useState(0);
   const [reportType, setReportType] = useState('amount');
+  const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(
+    dayjs().hour(4).minute(0).second(0)
+  );
+  const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(
+    dayjs().hour(16).minute(0).second(0)
+  );
   const [showCopySuccess, setShowCopySuccess] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -95,9 +107,44 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
     return sections.join('\n\n');
   };
 
+  const generateSalesReport = async () => {
+    if (!startDate || !endDate) return '';
+    
+    const sales = await getSales();
+    const filteredSales = sales.filter(sale => {
+      const saleDate = new Date(sale.timestamp);
+      return saleDate >= startDate.toDate() && saleDate <= endDate.toDate();
+    });
+
+    if (filteredSales.length === 0) {
+      return 'За вказаний період продажів не було';
+    }
+
+    const salesByItem = filteredSales.reduce((acc, sale) => {
+      const key = sale.iceCreamName;
+      if (!acc[key]) acc[key] = 0;
+      acc[key] += sale.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const sections = [
+      `${startDate.format('DD.MM.YYYY HH:mm')} - ${endDate.format('DD.MM.YYYY HH:mm')}\n`,
+      ...Object.entries(salesByItem).map(([name, amount]) => 
+        `- ${name}: ${amount} шт.`
+      )
+    ];
+
+    return sections.join('\n');
+  };
+
   const handleCopyReport = async () => {
+    let report = '';
     if (reportType === 'amount') {
-      const report = await generateAmountReport();
+      report = await generateAmountReport();
+    } else if (reportType === 'sales') {
+      report = await generateSalesReport();
+    }
+    if (report) {
       await navigator.clipboard.writeText(report);
       setShowCopySuccess(true);
     }
@@ -130,13 +177,38 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
                   control={<Radio />} 
                   label="Звіт по кількості" 
                 />
+                <FormControlLabel 
+                  value="sales" 
+                  control={<Radio />} 
+                  label="Звіт по витратам" 
+                />
               </RadioGroup>
             </FormControl>
+
+            {reportType === 'sales' && (
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="uk">
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <DateTimePicker
+                    label="Початок періоду"
+                    value={startDate}
+                    onChange={setStartDate}
+                    slotProps={{ textField: { fullWidth: true } }}
+                  />
+                  <DateTimePicker
+                    label="Кінець періоду"
+                    value={endDate}
+                    onChange={setEndDate}
+                    slotProps={{ textField: { fullWidth: true } }}
+                  />
+                </Box>
+              </LocalizationProvider>
+            )}
+
             <Button
               variant="contained"
               startIcon={<ContentCopyIcon />}
               onClick={handleCopyReport}
-              disabled={reportType === 'none'}
+              disabled={reportType === 'sales' && (!startDate || !endDate)}
             >
               Копіювати у буфер обміну
             </Button>
