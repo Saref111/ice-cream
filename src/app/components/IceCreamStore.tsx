@@ -6,19 +6,22 @@ import {
   deleteIceCream, deleteGood, recordSale, recordGoodSale,
   type IceCream, type Item 
 } from '../../lib/db';
-import { Container, Typography, Divider, SpeedDial, SpeedDialAction } from '@mui/material';
+import { Container, Typography, Divider, SpeedDial, SpeedDialAction, IconButton, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
 import CandyIcon from '@mui/icons-material/Cake';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import ItemList from './ItemList';
 import AddIceCreamDialog from './AddIceCreamDialog';
 import AddGoodDialog from './AddGoodDialog';
+import StatsDialog from './StatsDialog';
 
 export default function IceCreamStore() {
   const [iceCreams, setIceCreams] = useState<IceCream[]>([]);
   const [goods, setGoods] = useState<Item[]>([]);
   const [isIceCreamDialogOpen, setIsIceCreamDialogOpen] = useState(false);
   const [isGoodsDialogOpen, setIsGoodsDialogOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   useEffect(() => {
     loadAll();
@@ -80,7 +83,16 @@ export default function IceCreamStore() {
 
   return (
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: 4, pb: 8 }}>
-      <Typography variant="h4" gutterBottom>Кіоск морозива</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+        <Typography variant="h4">Кіоск морозива</Typography>
+        <IconButton 
+          sx={{ ml: 2 }} 
+          onClick={() => setIsStatsOpen(true)}
+          color="primary"
+        >
+          <BarChartIcon />
+        </IconButton>
+      </Box>
 
       <ItemList
         title="Морозиво"
@@ -129,6 +141,11 @@ export default function IceCreamStore() {
         open={isGoodsDialogOpen}
         onClose={() => setIsGoodsDialogOpen(false)}
         onAdd={loadAll}
+      />
+
+      <StatsDialog
+        open={isStatsOpen}
+        onClose={() => setIsStatsOpen(false)}
       />
     </Container>
   );
