@@ -181,3 +181,8 @@ export async function addDrone(name: string, amount: number): Promise<IDBValidKe
     const db = await initDB();
     return db.add(DRONES_STORE, { name, amount });
 }
+
+export async function deleteDrone(id: number): Promise<void> {
+    const db = await initDB();
+    return db.delete(DRONES_STORE, id);
+}

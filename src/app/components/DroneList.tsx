@@ -3,7 +3,7 @@
 import { Box, Chip, Typography, IconButton } from '@mui/material';
 import DroneIcon from '@mui/icons-material/Air';
 import AddIcon from '@mui/icons-material/Add';
-import { Drone } from '../../lib/db';
+import { Drone, deleteDrone } from '../../lib/db';
 import { useState } from 'react';
 import AddDroneDialog from './AddDroneDialog';
 
@@ -14,6 +14,11 @@ interface DroneListProps {
 
 export default function DroneList({ drones, onUpdate }: DroneListProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleDelete = async (id: number) => {
+    await deleteDrone(id);
+    onUpdate();
+  };
 
   return (
     <>
@@ -44,6 +49,7 @@ export default function DroneList({ drones, onUpdate }: DroneListProps) {
                 size="small"
                 color="primary"
                 variant="outlined"
+                onDelete={() => handleDelete(drone.id)}
               />
             ))}
           </Box>
