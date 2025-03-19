@@ -186,3 +186,10 @@ export async function deleteDrone(id: number): Promise<void> {
     const db = await initDB();
     return db.delete(DRONES_STORE, id);
 }
+
+export async function updateDrone(id: number, name: string, amount: number): Promise<void> {
+    const db = await initDB();
+    const tx = db.transaction(DRONES_STORE, 'readwrite');
+    const store = tx.objectStore(DRONES_STORE);
+    await store.put({ id, name, amount });
+}

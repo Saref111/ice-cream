@@ -6,6 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { Drone, deleteDrone } from '../../lib/db';
 import { useState } from 'react';
 import AddDroneDialog from './AddDroneDialog';
+import EditDroneDialog from './EditDroneDialog';
 
 interface DroneListProps {
   drones: Drone[];
@@ -13,7 +14,8 @@ interface DroneListProps {
 }
 
 export default function DroneList({ drones, onUpdate }: DroneListProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingDrone, setEditingDrone] = useState<Drone | null>(null);
 
   const handleDelete = async (id: number) => {
     await deleteDrone(id);
@@ -49,6 +51,7 @@ export default function DroneList({ drones, onUpdate }: DroneListProps) {
                 size="small"
                 color="primary"
                 variant="outlined"
+                onClick={() => setEditingDrone(drone)}
                 onDelete={() => handleDelete(drone.id)}
               />
             ))}
@@ -56,7 +59,7 @@ export default function DroneList({ drones, onUpdate }: DroneListProps) {
         )}
         <IconButton 
           size="small" 
-          onClick={() => setIsDialogOpen(true)}
+          onClick={() => setIsAddDialogOpen(true)}
           color="primary"
         >
           <AddIcon />
@@ -64,9 +67,16 @@ export default function DroneList({ drones, onUpdate }: DroneListProps) {
       </Box>
 
       <AddDroneDialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
         onAdd={onUpdate}
+      />
+
+      <EditDroneDialog
+        open={!!editingDrone}
+        onClose={() => setEditingDrone(null)}
+        onEdit={onUpdate}
+        drone={editingDrone}
       />
     </>
   );
