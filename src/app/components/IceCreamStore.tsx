@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   getIceCreams, getGoods, updateQuantity, updateGoodQuantity,
   deleteIceCream, deleteGood, recordSale, recordGoodSale,
-  type IceCream, type Item 
+  type IceCream, type Item, getDrones, type Drone
 } from '../../lib/db';
 import { Container, Typography, Divider, SpeedDial, SpeedDialAction, IconButton, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -15,10 +15,12 @@ import ItemList from './ItemList';
 import AddIceCreamDialog from './AddIceCreamDialog';
 import AddGoodDialog from './AddGoodDialog';
 import StatsDialog from './StatsDialog';
+import DroneList from './DroneList';
 
 export default function IceCreamStore() {
   const [iceCreams, setIceCreams] = useState<IceCream[]>([]);
   const [goods, setGoods] = useState<Item[]>([]);
+  const [drones, setDrones] = useState<Drone[]>([]);
   const [isIceCreamDialogOpen, setIsIceCreamDialogOpen] = useState(false);
   const [isGoodsDialogOpen, setIsGoodsDialogOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -28,12 +30,14 @@ export default function IceCreamStore() {
   }, []);
 
   async function loadAll() {
-    const [iceCreamData, goodsData] = await Promise.all([
+    const [iceCreamData, goodsData, dronesData] = await Promise.all([
       getIceCreams(),
-      getGoods()
+      getGoods(),
+      getDrones()
     ]);
     setIceCreams(iceCreamData);
     setGoods(goodsData);
+    setDrones(dronesData);
   }
 
   async function handleIceCreamDecrease(id: number, name: string, quantity: number, amount: number) {
@@ -93,6 +97,8 @@ export default function IceCreamStore() {
           <BarChartIcon />
         </IconButton>
       </Box>
+
+      <DroneList drones={drones} onUpdate={loadAll} />
 
       <ItemList
         title="Морозиво"

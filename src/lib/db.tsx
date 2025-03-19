@@ -5,6 +5,7 @@ const STORE_NAME = 'ice_creams';
 const SALES_STORE = 'sales';
 const GOODS_STORE = 'additional_goods';
 const INCOME_STORE = 'income';
+const DRONES_STORE = 'drones';
 
 export interface IceCream {
     id: number;
@@ -36,8 +37,14 @@ export interface Income {
     type: 'icecream' | 'good';
 }
 
+export interface Drone {
+    id: number;
+    name: string;
+    amount: number;
+}
+
 async function initDB() {
-    return openDB(DB_NAME, 4, {
+    return openDB(DB_NAME, 5, {
         upgrade(db, oldVersion, newVersion) {
             if (oldVersion < 1) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
@@ -50,6 +57,9 @@ async function initDB() {
             }
             if (oldVersion < 4) {
                 db.createObjectStore(INCOME_STORE, { keyPath: 'id', autoIncrement: true });
+            }
+            if (oldVersion < 5) {
+                db.createObjectStore(DRONES_STORE, { keyPath: 'id', autoIncrement: true });
             }
         },
     });
@@ -160,4 +170,14 @@ export async function recordIncome(itemId: number, itemName: string, quantity: n
 export async function getIncomes(): Promise<Income[]> {
     const db = await initDB();
     return db.getAll(INCOME_STORE);
+}
+
+export async function getDrones(): Promise<Drone[]> {
+    const db = await initDB();
+    return db.getAll(DRONES_STORE);
+}
+
+export async function addDrone(name: string, amount: number): Promise<IDBValidKey> {
+    const db = await initDB();
+    return db.add(DRONES_STORE, { name, amount });
 }
