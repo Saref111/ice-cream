@@ -13,14 +13,17 @@ import {
   Checkbox,
   Button,
   Alert,
-  Snackbar
+  Snackbar,
+  Radio,
+  RadioGroup,
+  FormControl,
 } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { getIceCreams, getGoods, getDrones } from '../../lib/db';
 
-const BK_POSITION_TEXT = String.fromCharCode(
+const ICECREAM_TEXT = String.fromCharCode(
   66, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
 );
 
@@ -51,7 +54,7 @@ interface StatsDialogProps {
 
 export default function StatsDialog({ open, onClose }: StatsDialogProps) {
   const [tabValue, setTabValue] = useState(0);
-  const [showAmountReport, setShowAmountReport] = useState(false);
+  const [reportType, setReportType] = useState('amount');
   const [showCopySuccess, setShowCopySuccess] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -79,7 +82,7 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
       const iceCreamReport = iceCreams.map(ice => 
         `- ${ice.name}: ${ice.quantity} шт.`
       ).join('\n');
-      sections.push(`${BK_POSITION_TEXT}:\n${iceCreamReport}`);
+      sections.push(`${ICECREAM_TEXT}:\n${iceCreamReport}`);
     }
 
     if (goods.length > 0) {
@@ -93,7 +96,7 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
   };
 
   const handleCopyReport = async () => {
-    if (showAmountReport) {
+    if (reportType === 'amount') {
       const report = await generateAmountReport();
       await navigator.clipboard.writeText(report);
       setShowCopySuccess(true);
@@ -117,20 +120,23 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
         </Box>
         <TabPanel value={tabValue} index={0}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={showAmountReport}
-                  onChange={(e) => setShowAmountReport(e.target.checked)}
+            <FormControl>
+              <RadioGroup
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+              >
+                <FormControlLabel 
+                  value="amount" 
+                  control={<Radio />} 
+                  label="Звіт по кількості" 
                 />
-              }
-              label="Звіт по кількості"
-            />
+              </RadioGroup>
+            </FormControl>
             <Button
               variant="contained"
               startIcon={<ContentCopyIcon />}
               onClick={handleCopyReport}
-              disabled={!showAmountReport}
+              disabled={reportType === 'none'}
             >
               Копіювати у буфер обміну
             </Button>
