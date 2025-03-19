@@ -22,12 +22,16 @@ import {
 import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { getIceCreams, getGoods, getDrones, getSales } from '../../lib/db';
+import { 
+  getIceCreams, getGoods, getDrones, getSales, getIncomes,
+  type IceCream, type Item, type Drone, type Sale, type Income 
+} from '../../lib/db';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import 'dayjs/locale/uk';
+import { saveAs } from 'file-saver';
 
 const ICECREAM_TEXT = String.fromCharCode(
   66, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
@@ -56,6 +60,15 @@ function TabPanel(props: TabPanelProps) {
 interface StatsDialogProps {
   open: boolean;
   onClose: () => void;
+}
+
+interface DatabaseExport {
+  timestamp: string;
+  iceCreams: IceCream[];
+  goods: Item[];
+  drones: Drone[];
+  sales: Sale[];
+  incomes: Income[];
 }
 
 export default function StatsDialog({ open, onClose }: StatsDialogProps) {
@@ -137,12 +150,41 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
     return sections.join('\n');
   };
 
+  const generateDatabaseExport = async () => {
+    const [iceCreams, goods, drones, sales, incomes] = await Promise.all([
+      getIceCreams(),
+      getGoods(),
+      getDrones(),
+      getSales(),
+      getIncomes()
+    ]);
+
+    const exportData: DatabaseExport = {
+      timestamp: new Date().toISOString(),
+      iceCreams,
+      goods,
+      drones,
+      sales,
+      incomes
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json'
+    });
+    
+    const fileName = `icecream-store-backup-${dayjs().format('DD-MM-YYYY')}.json`;
+    saveAs(blob, fileName);
+  };
+
   const handleCopyReport = async () => {
     let report = '';
     if (reportType === 'amount') {
       report = await generateAmountReport();
     } else if (reportType === 'sales') {
       report = await generateSalesReport();
+    } else if (reportType === 'database') {
+      await generateDatabaseExport();
+      return;
     }
     if (report) {
       await navigator.clipboard.writeText(report);
@@ -175,12 +217,17 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
                 <FormControlLabel 
                   value="amount" 
                   control={<Radio />} 
-                  label="Звіт по кількості" 
+                  label="Звіт по залишкам" 
                 />
                 <FormControlLabel 
                   value="sales" 
                   control={<Radio />} 
                   label="Звіт по витратам" 
+                />
+                <FormControlLabel 
+                  value="database" 
+                  control={<Radio />} 
+                  label="Експорт бази даних" 
                 />
               </RadioGroup>
             </FormControl>
@@ -210,7 +257,7 @@ export default function StatsDialog({ open, onClose }: StatsDialogProps) {
               onClick={handleCopyReport}
               disabled={reportType === 'sales' && (!startDate || !endDate)}
             >
-              Копіювати у буфер обміну
+              {reportType === 'database' ? 'Завантажити JSON' : 'Копіювати у буфер обміну'}
             </Button>
           </Box>
         </TabPanel>
