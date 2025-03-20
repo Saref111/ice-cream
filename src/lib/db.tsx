@@ -54,7 +54,7 @@ export interface DatabaseExport {
 
 async function initDB() {
     return openDB(DB_NAME, 5, {
-        upgrade(db, oldVersion, newVersion) {
+        upgrade(db, oldVersion) {
             if (oldVersion < 1) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
             }

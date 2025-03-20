@@ -10,14 +10,12 @@ import {
   Box,
   Typography,
   FormControlLabel,
-  Checkbox,
   Button,
   Alert,
   Snackbar,
   Radio,
   RadioGroup,
   FormControl,
-  TextField,
 } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -210,6 +208,7 @@ export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProp
       onUpdate();
       onClose();
     } catch (error) {
+      console.error('Import error:', error);
       setImportError('Помилка імпорту. Перевірте формат файлу.');
     }
   }, [onClose, onUpdate]);
