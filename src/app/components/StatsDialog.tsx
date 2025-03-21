@@ -33,10 +33,9 @@ import 'dayjs/locale/uk';
 import { saveAs } from 'file-saver';
 import { useDropzone } from 'react-dropzone';
 
-const ICECREAM_TEXT = String.fromCharCode(
-  66, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
-);
-
+const ICECREAM_TEXT = new TextDecoder("utf-8").decode(new Uint8Array([
+  208, 145, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
+]));
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
