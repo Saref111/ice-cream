@@ -1,6 +1,6 @@
 'use client';
 
-import { Backdrop, Box, Button, ButtonGroup, CircularProgress, List, ListItem, Typography } from '@mui/material';
+import { Box, Button, ButtonGroup, CircularProgress, List, ListItem, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
