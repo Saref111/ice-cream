@@ -29,7 +29,6 @@ export default function DroneList({ drones, onUpdate }: DroneListProps) {
           display: 'flex', 
           gap: 2, 
           alignItems: 'center',
-          bgcolor: 'background.paper',
           p: 1,
           borderRadius: 1,
           boxShadow: 1,

@@ -169,7 +169,7 @@ export async function recordIncome(itemId: number, itemName: string, quantity: n
         itemId,
         itemName,
         quantity,
-        amount: 0, // You can add price logic later if needed
+        amount: 0,
         timestamp: new Date(),
         type
     };

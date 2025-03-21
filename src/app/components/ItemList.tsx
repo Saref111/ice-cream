@@ -69,20 +69,27 @@ export default function ItemList({
               key={id} 
               sx={{ 
                 display: 'flex', 
-                justifyContent: 'space-between',
+                justifyContent: {
+                  xs: 'space-between',
+                  sm: 'space-around'
+                },
                 alignItems: 'center',
-                py: 2,
-                px: 3,
+                py: { xs: 1, sm: 2 },
+                px: { xs: 2, sm: 2 },
                 mb: 2,
                 border: '1px solid',
-                borderColor: 'divider',
                 borderRadius: 1,
-                bgcolor: 'background.paper',
                 boxShadow: 1
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: {xs: 2, sm: 1}, width: {xs: '130px', sm: '50%'} }}>
+                <Typography variant="body1" sx={{ 
+                  fontSize: {sm: 14, md: 16, xs: 12},
+                  fontWeight: 500,
+                  whiteSpace: 'wrap',
+                  wordBreak: 'break-word',
+                  width: '50%',
+                  }}>
                   {name}
                 </Typography>
                 <Typography 
@@ -93,7 +100,8 @@ export default function ItemList({
                     px: 1.5,
                     py: 0.5,
                     borderRadius: 1,
-                    fontWeight: 'medium'
+                    fontWeight: 'medium',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {quantity} шт.
