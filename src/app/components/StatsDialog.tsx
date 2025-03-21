@@ -34,7 +34,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/uk';
 import { saveAs } from 'file-saver';
 import { useDropzone } from 'react-dropzone';
-import { ca } from 'date-fns/locale';
 
 const ICECREAM_TEXT = new TextDecoder("utf-8").decode(new Uint8Array([
   208, 145, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
