@@ -1,3 +1,4 @@
+import { TextReportData } from '@/app/components/StatsDialog';
 import { openDB } from 'idb';
 
 const DB_NAME = 'ice_cream_store';
@@ -232,4 +233,20 @@ export async function importDatabase(data: DatabaseExport): Promise<void> {
     ]);
 
     await tx.done;
+}
+
+export async function importDatabaseFromText(data: TextReportData): Promise<void> {
+    const db = await initDB();
+    await clearDatabase();
+
+    const tx = db.transaction(
+        [STORE_NAME, GOODS_STORE, DRONES_STORE], 
+        'readwrite'
+    );
+
+    await Promise.all([
+        ...data.iceCreams.map((item) => tx.objectStore(STORE_NAME).add(item)),
+        ...data.goods.map((item) => tx.objectStore(GOODS_STORE).add(item)),
+        ...data.drones.map((item) => tx.objectStore(DRONES_STORE).add(item))
+    ]);
 }

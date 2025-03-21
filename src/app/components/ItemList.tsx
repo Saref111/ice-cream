@@ -37,14 +37,28 @@ export default function ItemList({
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box sx={{ mt: 4, position: 'relative' }}>
       <Typography variant="h5" gutterBottom>{title}</Typography>
        
       {isLoading && (
-          <CircularProgress color="inherit" />
+          <div style={{
+            position: 'absolute', 
+            top: '50%', 
+            left: '50%', 
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1,
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <CircularProgress color="inherit" />
+          </div>
       )
       }
-      {items.length === 0 && !isLoading? (
+      {items.length === 0? (
         <Box 
           sx={{ 
             display: 'flex', 

@@ -33,12 +33,27 @@ export default function DroneList({ drones, onUpdate, isLoading }: DroneListProp
           p: 1,
           borderRadius: 1,
           boxShadow: 1,
-          mb: 3
+          mb: 3,
+          position: 'relative'
         }}
       >
         <DroneIcon color="primary" />
         <Typography variant="subtitle1" sx={{ mr: 2 }}>Дрони:</Typography>
-        {isLoading && <CircularProgress color="inherit" />}
+        {isLoading && <div style={{
+            position: 'absolute', 
+            top: '50%', 
+            left: '50%', 
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1,
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <CircularProgress color="inherit" />
+          </div>}
         {drones.length === 0 && !isLoading ? (
           <Typography variant="body2" color="text.secondary">
             Немає активних дронів

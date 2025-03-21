@@ -16,6 +16,7 @@ import {
   Radio,
   RadioGroup,
   FormControl,
+  TextareaAutosize,
 } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -23,7 +24,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { 
   getIceCreams, getGoods, getDrones, getSales, getIncomes,
-  type IceCream, type Item, type Drone, type Sale, type Income, importDatabase
+  type IceCream, type Item, type Drone, type Sale, type Income, importDatabase,
+  importDatabaseFromText
 } from '../../lib/db';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -32,6 +34,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/uk';
 import { saveAs } from 'file-saver';
 import { useDropzone } from 'react-dropzone';
+import { ca } from 'date-fns/locale';
 
 const ICECREAM_TEXT = new TextDecoder("utf-8").decode(new Uint8Array([
   208, 145, 75, 32, 208, 189, 208, 176, 32, 208, 191, 208, 190, 208, 183, 208, 184, 209, 134, 209, 150, 209, 151
@@ -71,6 +74,85 @@ interface DatabaseExport {
   incomes: Income[];
 }
 
+const generateAmountReport = async () => {
+  const [iceCreams, goods, drones] = await Promise.all([
+    getIceCreams(),
+    getGoods(),
+    getDrones()
+  ]);
+
+  const currentDate = new Date().toLocaleDateString('uk-UA');
+  const sections: string[] = [currentDate];
+  
+  if (drones.length > 0) {
+    const dronesReport = drones.map(drone => 
+      `- ${drone.name}: ${drone.amount} шт.`
+    ).join('\n');
+    sections.push(`Дрони:\n${dronesReport}`);
+  }
+
+  if (iceCreams.length > 0) {
+    const iceCreamReport = iceCreams.map(ice => 
+      `- ${ice.name}: ${ice.quantity} шт.`
+    ).join('\n');
+    sections.push(`${ICECREAM_TEXT}:\n${iceCreamReport}`);
+  }
+
+  if (goods.length > 0) {
+    const goodsReport = goods.map(good => 
+      `- ${good.name}: ${good.quantity} шт.`
+    ).join('\n');
+    sections.push(`Додатково:\n${goodsReport}`);
+  }
+
+  return sections.join('\n\n');
+};
+
+const parseReport = (text: string): TextReportData => {
+  const lines = text.split('\n');
+  const droneData: Record<string, number> = {};
+  const icecreamData: Record<string, number> = {};
+  const additionalData: Record<string, number> = {};
+  lines.forEach((line, index) => {
+    if (line.startsWith('Дрони:')) {
+      let i = index + 1;
+      while (lines[i] && lines[i].startsWith('-')) {
+        const [name, amount] = lines[i].replace('- ', '').split(': ');
+        droneData[name] = parseInt(amount, 10);
+        i++;
+      }
+    }
+    if (line.startsWith(ICECREAM_TEXT)) {
+      let i = index + 1;
+      while (lines[i] && lines[i].startsWith('-')) {
+        const [name, amount] = lines[i].replace('- ', '').split(': ');
+        icecreamData[name] = parseInt(amount, 10);
+        i++;
+      }
+    }
+    if (line.startsWith('Додатково:')) {
+      let i = index + 1;
+      while (lines[i] && lines[i].startsWith('-')) {
+        const [name, amount] = lines[i].replace('- ', '').split(': ');
+        additionalData[name] = parseInt(amount, 10);
+        i++;
+      }
+    }
+  });
+
+  return {
+    iceCreams: Object.entries(icecreamData).map(([name, quantity]) => ({ name, quantity })),
+    goods: Object.entries(additionalData).map(([name, quantity]) => ({ name, quantity })),
+    drones: Object.entries(droneData).map(([name, amount]) => ({ name, amount })),
+  }
+}
+
+export interface TextReportData {
+  iceCreams: Omit<IceCream, 'id'>[];
+  goods: Omit<Item, 'id'>[];
+  drones: Omit<Drone, 'id'>[];
+};
+
 export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProps) {
   const [tabValue, setTabValue] = useState(0);
   const [reportType, setReportType] = useState('amount');
@@ -81,44 +163,12 @@ export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProp
     dayjs().hour(16).minute(0).second(0)
   );
   const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const [importType, setImportType] = useState('json');
+  const [currentText, setCurrentText] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-  };
-
-  const generateAmountReport = async () => {
-    const [iceCreams, goods, drones] = await Promise.all([
-      getIceCreams(),
-      getGoods(),
-      getDrones()
-    ]);
-
-    const currentDate = new Date().toLocaleDateString('uk-UA');
-    const sections: string[] = [currentDate];
-    
-    if (drones.length > 0) {
-      const dronesReport = drones.map(drone => 
-        `- ${drone.name}: ${drone.amount} шт.`
-      ).join('\n');
-      sections.push(`Дрони:\n${dronesReport}`);
-    }
-
-    if (iceCreams.length > 0) {
-      const iceCreamReport = iceCreams.map(ice => 
-        `- ${ice.name}: ${ice.quantity} шт.`
-      ).join('\n');
-      sections.push(`${ICECREAM_TEXT}:\n${iceCreamReport}`);
-    }
-
-    if (goods.length > 0) {
-      const goodsReport = goods.map(good => 
-        `- ${good.name}: ${good.quantity} шт.`
-      ).join('\n');
-      sections.push(`Додатково:\n${goodsReport}`);
-    }
-
-    return sections.join('\n\n');
   };
 
   const generateSalesReport = async () => {
@@ -212,6 +262,20 @@ export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProp
     }
   }, [onClose, onUpdate]);
 
+  const onTextImport = useCallback(async () => {
+    try {
+      const data = parseReport(currentText);
+      await importDatabaseFromText(data);
+      setShowCopySuccess(true);
+      setImportError(null);
+      onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Import error:', error);
+      setImportError('Помилка імпорту. Перевірте формат тексту.');
+    }
+  }, [currentText, onClose, onUpdate]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,
     accept: {
@@ -290,7 +354,25 @@ export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProp
           </Box>
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
-          <Box
+        <FormControl>
+              <RadioGroup
+                value={importType}
+                onChange={(e) => setImportType(e.target.value)}
+              >
+                <FormControlLabel 
+                  value="json" 
+                  control={<Radio />} 
+                  label="Імпортувати з JSON" 
+                />
+                <FormControlLabel 
+                  value="amount" 
+                  control={<Radio />} 
+                  label="Імпортувати з наявного звіту" 
+                />
+              </RadioGroup>
+            </FormControl>
+
+          {importType === 'json' && (<Box
             {...getRootProps()}
             sx={{
               border: '2px dashed',
@@ -304,7 +386,8 @@ export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProp
                 bgcolor: 'action.hover'
               }
             }}
-          >
+          > 
+            
             <input {...getInputProps()} />
             <UploadFileIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
             <Typography>
@@ -316,7 +399,25 @@ export default function StatsDialog({ open, onClose, onUpdate }: StatsDialogProp
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Підтримуються файли .json
             </Typography>
-          </Box>
+          </Box>)}
+
+          {importType === 'amount' && (
+            <>
+              <TextareaAutosize
+                placeholder="Вставте звіт сюди"
+                style={{ width: '100%', minHeight: 200, padding: 15 }}
+                onChange={(e) => setCurrentText(e.target.value)}
+              />
+              <Button
+                sx={{
+                  width: '100%',
+                  mt: 2
+                }}
+                variant="contained"
+                onClick={() => onTextImport()}
+              >Імпортувати</Button>
+            </>
+          )}
           {importError && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {importError}
