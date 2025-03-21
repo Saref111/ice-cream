@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Chip, Typography, IconButton } from '@mui/material';
+import { Box, Chip, Typography, IconButton, CircularProgress } from '@mui/material';
 import DroneIcon from '@mui/icons-material/Air';
 import AddIcon from '@mui/icons-material/Add';
 import { Drone, deleteDrone } from '../../lib/db';
@@ -11,9 +11,10 @@ import EditDroneDialog from './EditDroneDialog';
 interface DroneListProps {
   drones: Drone[];
   onUpdate: () => void;
+  isLoading?: boolean;
 }
 
-export default function DroneList({ drones, onUpdate }: DroneListProps) {
+export default function DroneList({ drones, onUpdate, isLoading }: DroneListProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDrone, setEditingDrone] = useState<Drone | null>(null);
 
@@ -37,7 +38,8 @@ export default function DroneList({ drones, onUpdate }: DroneListProps) {
       >
         <DroneIcon color="primary" />
         <Typography variant="subtitle1" sx={{ mr: 2 }}>Дрони:</Typography>
-        {drones.length === 0 ? (
+        {isLoading && <CircularProgress color="inherit" />}
+        {drones.length === 0 && !isLoading ? (
           <Typography variant="body2" color="text.secondary">
             Немає активних дронів
           </Typography>

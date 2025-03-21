@@ -6,7 +6,7 @@ import {
   deleteIceCream, deleteGood, recordSale, recordGoodSale,
   type IceCream, type Item, getDrones, type Drone
 } from '../../lib/db';
-import { Container, Typography, Divider, SpeedDial, SpeedDialAction, IconButton, Box } from '@mui/material';
+import { Container, Typography, Divider, SpeedDial, SpeedDialAction, IconButton, Box, Alert } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
 import CandyIcon from '@mui/icons-material/Cake';
@@ -24,20 +24,30 @@ export default function IceCreamStore() {
   const [isIceCreamDialogOpen, setIsIceCreamDialogOpen] = useState(false);
   const [isGoodsDialogOpen, setIsGoodsDialogOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     loadAll();
   }, []);
 
   async function loadAll() {
-    const [iceCreamData, goodsData, dronesData] = await Promise.all([
-      getIceCreams(),
-      getGoods(),
-      getDrones()
-    ]);
-    setIceCreams(iceCreamData);
-    setGoods(goodsData);
-    setDrones(dronesData);
+    setIsLoading(true);
+    try {
+
+      const [iceCreamData, goodsData, dronesData] = await Promise.all([
+        getIceCreams(),
+        getGoods(),
+        getDrones()
+      ]);
+      setIceCreams(iceCreamData);
+      setGoods(goodsData);
+      setDrones(dronesData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setLoadError('Помилка завантаження даних');
+    }
+    setIsLoading(false);
   }
 
   async function handleIceCreamDecrease(id: number, name: string, quantity: number, amount: number) {
@@ -98,7 +108,7 @@ export default function IceCreamStore() {
         </IconButton>
       </Box>
 
-      <DroneList drones={drones} onUpdate={loadAll} />
+      <DroneList drones={drones} onUpdate={loadAll} isLoading={isLoading}/>
 
       <ItemList
         title="Морозиво"
@@ -108,6 +118,7 @@ export default function IceCreamStore() {
         onAdd={() => setIsIceCreamDialogOpen(true)}
         onAddQuantity={handleIceCreamAddQuantity}
         emptyIcon={<IceCreamIcon sx={{ fontSize: 60 }} />}
+        isLoading={isLoading}
       />
 
       <Divider sx={{ my: 4 }} />
@@ -120,6 +131,7 @@ export default function IceCreamStore() {
         onAdd={() => setIsGoodsDialogOpen(true)}
         onAddQuantity={handleGoodAddQuantity}
         emptyIcon={<CandyIcon sx={{ fontSize: 60 }} />}
+        isLoading={isLoading}
       />
 
       <SpeedDial
@@ -154,6 +166,11 @@ export default function IceCreamStore() {
         onClose={() => setIsStatsOpen(false)}
         onUpdate={loadAll}
       />
+      {loadError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {loadError}
+        </Alert>
+      )}
     </Container>
   );
 } 

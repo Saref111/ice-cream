@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Button, ButtonGroup, List, ListItem, Typography } from '@mui/material';
+import { Backdrop, Box, Button, ButtonGroup, CircularProgress, List, ListItem, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import IceCreamIcon from '@mui/icons-material/Icecream';
@@ -21,6 +21,7 @@ interface ItemListProps {
   onAdd: () => void;
   onAddQuantity: (id: number, name: string, currentQuantity: number, additionalQuantity: number) => Promise<void>;
   emptyIcon?: React.ReactNode;
+  isLoading?: boolean;
 }
 
 export default function ItemList({ 
@@ -30,15 +31,20 @@ export default function ItemList({
   onRemoveAll, 
   onAdd,
   onAddQuantity,
-  emptyIcon = <IceCreamIcon sx={{ fontSize: 60 }} />
+  emptyIcon = <IceCreamIcon sx={{ fontSize: 60 }} />,
+  isLoading = false,
 }: ItemListProps) {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>{title}</Typography>
-
-      {items.length === 0 ? (
+       
+      {isLoading && (
+          <CircularProgress color="inherit" />
+      )
+      }
+      {items.length === 0 && !isLoading? (
         <Box 
           sx={{ 
             display: 'flex', 
